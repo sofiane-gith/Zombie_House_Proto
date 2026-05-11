@@ -6,269 +6,96 @@
 <title>Nuit Assiégée — Prototype</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
-  :root {
-    --bg: #0f1117;
-    --bg2: #161b24;
-    --bg3: #1e2533;
-    --border: #2a3245;
-    --border2: #3a4a65;
-    --text: #e8eaf0;
-    --text2: #9aa5bc;
-    --text3: #5c6a85;
-    --danger: #e05555;
-    --warning: #e8a020;
-    --success: #1faa6e;
-    --info: #4a9ede;
-    --radius: 8px;
-    --radius-sm: 5px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 20px 16px 40px;
-  }
-  h1 {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: .5px;
-    margin-bottom: 4px;
-  }
-  .subtitle {
-    text-align: center;
-    font-size: 12px;
-    color: var(--text3);
-    margin-bottom: 18px;
-    letter-spacing: .3px;
-  }
-  .game-wrap {
-    position: relative;
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    max-width: 860px;
-    margin: 0 auto;
-  }
-  /* Header */
-  .hbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 14px;
-    padding: 9px 16px;
-    background: var(--bg3);
-    border-bottom: 0.5px solid var(--border);
-    align-items: center;
-  }
-  .hbar-turn { font-size: 13px; font-weight: 600; color: var(--text); }
-  .hbar-exit { font-size: 12px; color: var(--text2); }
-  .hbar-stats { margin-left: auto; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
-  .stat-chip { font-size: 12px; display: flex; align-items: center; gap: 4px; }
-  /* Layout */
-  .main-grid { display: grid; grid-template-columns: 1fr 210px; min-height: 380px; }
-  .scene { padding: 13px; overflow-y: auto; max-height: 480px; }
-  .journal-panel { border-left: 0.5px solid var(--border); display: flex; flex-direction: column; }
-  .journal-header { padding: 8px 13px; border-bottom: 0.5px solid var(--border); }
-  .journal-header p { font-size: 11px; font-weight: 500; color: var(--text2); }
-  #log { padding: 12px; overflow-y: auto; max-height: 440px; }
-  .log-entry { margin-bottom: 10px; }
-  .log-label { font-size: 10px; color: var(--text3); margin-bottom: 3px; }
-  .log-line { font-size: 11px; color: var(--text2); margin: 2px 0; line-height: 1.5; }
-  .log-line.d { color: var(--danger); }
-  .log-line.g { color: var(--success); }
-  .log-line.w { color: var(--warning); }
-  /* Char bar */
-  .char-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 13px;
-    background: var(--bg3);
-    border-top: 0.5px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .char-card {
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 9px 11px;
-    cursor: pointer;
-    transition: all .15s;
-    flex: 1;
-    min-width: 90px;
-    max-width: 135px;
-  }
-  .char-card:hover { border-color: var(--border2); }
-  .char-card.on { border-color: var(--warning); background: rgba(232,160,32,.08); }
-  .char-card.dead { opacity: .28; pointer-events: none; filter: grayscale(1); }
-  .char-name { font-size: 12px; font-weight: 600; margin-bottom: 1px; }
-  .char-role { font-size: 10px; color: var(--text2); margin-bottom: 5px; }
-  .char-hearts { display: flex; gap: 3px; margin-bottom: 5px; }
-  .char-fatbar { height: 3px; background: var(--bg3); border-radius: 2px; margin-bottom: 2px; }
-  .char-fatbar-fill { height: 100%; border-radius: 2px; transition: width .3s; }
-  .char-fatlbl { font-size: 10px; margin-bottom: 4px; }
-  .char-action { font-size: 10px; line-height: 1.3; }
-  /* Zones */
-  .section-label {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text3);
-    letter-spacing: .5px;
-    margin: 10px 0 5px;
-    text-transform: uppercase;
-  }
-  .zone {
-    background: var(--bg3);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 13px;
-    margin-bottom: 6px;
-    transition: border-color .15s, background .15s;
-  }
-  .zone.pick { border-color: var(--warning); cursor: pointer; }
-  .zone.pick:hover { background: rgba(232,160,32,.07); }
-  .zone.off { opacity: .32; pointer-events: none; }
-  .zone-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-  .zone-title { font-size: 12px; font-weight: 500; }
-  .zone-sub { font-size: 11px; color: var(--text2); }
-  .mini-bar { height: 4px; background: var(--bg); border-radius: 2px; margin: 5px 0; }
-  .mini-bar-fill { height: 100%; border-radius: 2px; transition: width .3s; }
-  .zone-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); }
-  .chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px; }
-  .chip {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 8px;
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-size: 11px; color: var(--text2);
-    background: var(--bg3);
-    transition: all .15s; cursor: default;
-  }
-  .chip.pick { border-color: var(--danger); cursor: pointer; color: var(--text); }
-  .chip.pick:hover { background: rgba(224,85,85,.1); }
-  .chip.gone { opacity: .2; text-decoration: line-through; pointer-events: none; }
-  /* Bed */
-  .bed-card {
-    background: var(--bg3);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 9px 12px;
-    margin-bottom: 6px;
-  }
-  .bed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
-  .bed-actions { display: flex; gap: 6px; }
-  /* Buttons */
-  button {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: var(--bg3);
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-size: 12px;
-    padding: 6px 12px;
-    cursor: pointer;
-    transition: all .15s;
-  }
-  button:hover:not(:disabled) { background: var(--border); }
-  button:disabled { opacity: .35; cursor: not-allowed; }
-  button.primary {
-    background: rgba(31,170,110,.15);
-    border-color: var(--success);
-    color: var(--success);
-  }
-  button.primary:hover:not(:disabled) { background: rgba(31,170,110,.25); }
-  button.danger { border-color: var(--danger); color: var(--danger); }
-  button.danger:hover:not(:disabled) { background: rgba(224,85,85,.1); }
-  .end-btn { margin-left: auto; }
-  /* Overlay */
-  .overlay {
-    display: none;
-    position: absolute; inset: 0;
-    background: rgba(0,0,0,.85);
-    flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 16px; text-align: center; padding: 2rem;
-  }
-  .overlay.show { display: flex; }
-  .overlay-title { font-size: 24px; font-weight: 700; }
-  .overlay-sub { font-size: 13px; color: var(--text2); max-width: 320px; line-height: 1.8; }
-  /* Config panel */
-  .cfg-toggle {
-    max-width: 860px; margin: 10px auto 0;
-    width: 100%;
-  }
-  .cfg-toggle button { width: 100%; justify-content: center; font-size: 13px; padding: 8px; }
-  #cfg {
-    display: none;
-    max-width: 860px; margin: 8px auto 0;
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-  }
-  .cfg-note {
-    font-size: 11px; color: var(--text2);
-    background: var(--bg3);
-    border-radius: var(--radius-sm);
-    padding: 8px 12px;
-    margin-bottom: 16px;
-    line-height: 1.6;
-  }
-  .cfg-section { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); }
-  .cfg-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-  .cfg-section-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
-  .cfg-note-small { font-size: 10px; color: var(--text3); font-style: italic; margin-bottom: 8px; }
-  .cfg-fields { display: flex; flex-wrap: wrap; gap: 10px 18px; }
-  .cfg-field { display: flex; flex-direction: column; gap: 3px; }
-  .cfg-field label { font-size: 10px; color: var(--text2); white-space: nowrap; }
-  .cfg-field input[type=number] { width: 64px; }
-  .cfg-field input[type=text] { width: 110px; }
-  input {
-    background: var(--bg3);
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-size: 12px;
-    padding: 5px 8px;
-  }
-  input:focus { outline: none; border-color: var(--warning); }
-  .dyn-card {
-    background: var(--bg3);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    margin-bottom: 8px;
-  }
-  .dyn-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
-  .dyn-card-title { font-size: 12px; font-weight: 600; }
-  /* Responsive */
-  @media (max-width: 600px) {
-    .main-grid { grid-template-columns: 1fr; }
-    .journal-panel { border-left: none; border-top: 0.5px solid var(--border); }
-    #log { max-height: 180px; }
-  }
+:root{--bg:#0f1117;--bg2:#161b24;--bg3:#1e2533;--border:#2a3245;--border2:#3a4a65;--text:#e8eaf0;--text2:#9aa5bc;--text3:#5c6a85;--danger:#e05555;--warning:#e8a020;--success:#1faa6e;--info:#4a9ede;--radius:8px;--radius-sm:5px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 40px;}
+h1{text-align:center;font-size:22px;font-weight:600;letter-spacing:.5px;margin-bottom:4px;}
+.subtitle{text-align:center;font-size:12px;color:var(--text3);margin-bottom:18px;}
+.game-wrap{position:relative;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);overflow:visible;max-width:860px;margin:0 auto;}
+.hbar{display:flex;flex-wrap:wrap;gap:6px 14px;padding:9px 16px;background:var(--bg3);border-bottom:0.5px solid var(--border);align-items:center;border-radius:var(--radius) var(--radius) 0 0;overflow:visible;}
+.hbar-turn{font-size:13px;font-weight:600;}
+.hbar-exit{font-size:12px;color:var(--text2);}
+.hbar-stats{margin-left:auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:relative;}
+/* Tooltip */
+.tip-wrap{position:relative;display:inline-flex;align-items:center;gap:4px;cursor:default;font-size:12px;}
+.tip-wrap .tip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:7px 11px;font-size:11px;color:var(--text);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .18s;box-shadow:0 6px 20px rgba(0,0,0,.5);z-index:9999;line-height:1.7;}
+.tip-wrap .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--border2);}
+.tip-wrap:hover .tip{opacity:1;}
+.main-grid{display:grid;grid-template-columns:1fr 210px;min-height:380px;}
+.scene{padding:13px;overflow-y:auto;max-height:480px;}
+.journal-panel{border-left:0.5px solid var(--border);display:flex;flex-direction:column;}
+.journal-header{padding:8px 13px;border-bottom:0.5px solid var(--border);}
+.journal-header p{font-size:11px;font-weight:500;color:var(--text2);}
+#log{padding:12px;overflow-y:auto;max-height:440px;}
+.log-entry{margin-bottom:10px;}
+.log-label{font-size:10px;color:var(--text3);margin-bottom:3px;}
+.log-line{font-size:11px;color:var(--text2);margin:2px 0;line-height:1.5;}
+.log-line.d{color:var(--danger);}.log-line.g{color:var(--success);}.log-line.w{color:var(--warning);}
+.char-bar{display:flex;align-items:center;gap:8px;padding:9px 13px;background:var(--bg3);border-top:0.5px solid var(--border);flex-wrap:wrap;border-radius:0 0 var(--radius) var(--radius);}
+.char-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;cursor:pointer;transition:all .15s;flex:1;min-width:90px;max-width:135px;}
+.char-card:hover{border-color:var(--border2);}.char-card.on{border-color:var(--warning);background:rgba(232,160,32,.08);}.char-card.dead{opacity:.28;pointer-events:none;filter:grayscale(1);}
+.slbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.5px;margin:10px 0 5px;text-transform:uppercase;}
+.zone{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;margin-bottom:6px;transition:border-color .15s,background .15s;}
+.zone.pick{border-color:var(--warning);cursor:pointer;}.zone.pick:hover{background:rgba(232,160,32,.07);}.zone.off{opacity:.32;pointer-events:none;}
+.mini-bar{height:4px;background:var(--bg);border-radius:2px;margin:5px 0;}
+.mini-bar-fill{height:100%;border-radius:2px;transition:width .3s;}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border:0.5px solid var(--border);border-radius:var(--radius-sm);font-size:11px;color:var(--text2);background:var(--bg3);transition:all .15s;cursor:default;}
+.chip.pick{border-color:var(--danger);cursor:pointer;color:var(--text);}.chip.pick:hover{background:rgba(224,85,85,.1);}.chip.gone{opacity:.2;text-decoration:line-through;pointer-events:none;}
+.bed-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:6px;}
+button{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:12px;padding:6px 12px;cursor:pointer;transition:all .15s;}
+button:hover:not(:disabled){background:var(--border);}button:disabled{opacity:.35;cursor:not-allowed;}
+button.primary{background:rgba(31,170,110,.15);border-color:var(--success);color:var(--success);}button.primary:hover:not(:disabled){background:rgba(31,170,110,.25);}
+button.danger{border-color:var(--danger);color:var(--danger);}button.danger:hover:not(:disabled){background:rgba(224,85,85,.1);}
+.overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.85);flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:2rem;border-radius:var(--radius);z-index:100;}
+.overlay.show{display:flex;}
+.overlay-title{font-size:24px;font-weight:700;}.overlay-sub{font-size:13px;color:var(--text2);max-width:320px;line-height:1.8;}
+.cfg-toggle{max-width:860px;margin:10px auto 0;width:100%;}
+.cfg-toggle button{width:100%;justify-content:center;font-size:13px;padding:8px;}
+#cfg{display:none;max-width:860px;margin:8px auto 0;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:18px 20px;}
+.cfg-section{margin-bottom:16px;padding-bottom:16px;border-bottom:0.5px solid var(--border);}
+.cfg-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.cfg-section-title{font-size:12px;font-weight:600;margin-bottom:10px;}
+.cfg-fields{display:flex;flex-wrap:wrap;gap:10px 18px;}
+.cfg-field{display:flex;flex-direction:column;gap:3px;}
+.cfg-field label{font-size:10px;color:var(--text2);white-space:nowrap;}
+.cfg-field input[type=number]{width:64px;}.cfg-field input[type=text]{width:110px;}
+input{background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:12px;padding:5px 8px;}
+input:focus{outline:none;border-color:var(--warning);}
+.dyn-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;}
+@media(max-width:600px){.main-grid{grid-template-columns:1fr;}.journal-panel{border-left:none;border-top:0.5px solid var(--border);}#log{max-height:180px;}}
 </style>
 </head>
 <body>
-
-<h1>⚡ Nuit Assiégée</h1>
-<p class="subtitle">Prototype — Point & Click de survie</p>
-
+<h1>Nuit Assiégée</h1>
+<p class="subtitle">Prototype — Point &amp; Click de survie</p>
 <div class="game-wrap">
   <div class="hbar">
     <span id="ht" class="hbar-turn">Tour 1</span>
     <span id="he" class="hbar-exit">Sortie : 0/5</span>
     <div class="hbar-stats">
-      <span class="stat-chip" style="color:var(--warning);"><i class="ti ti-tools"></i><span id="hplv">4</span></span>
-      <span class="stat-chip" style="color:var(--success);"><i class="ti ti-apple"></i><span id="hfov">6</span></span>
-      <span id="hte" class="stat-chip"><i id="htico" class="ti ti-flame"></i><span id="htv">4/5</span></span>
-      <span id="hsu" class="stat-chip">Survivants : 3/3</span>
+
+      <span class="tip-wrap" style="color:var(--warning);">
+        <i class="ti ti-tools"></i><span id="hplv">4</span>
+        <span class="tip">Planches disponibles<br><span style="color:var(--text2);font-size:10px;">Nécessaires pour barricader et alimenter le feu.</span></span>
+      </span>
+
+      <span class="tip-wrap" style="color:var(--success);">
+        <i class="ti ti-apple"></i><span id="hfov">6</span>
+        <span class="tip">Nourriture restante<br><span style="color:var(--text2);font-size:10px;">−1 ration consommée par tour. 0 = dégâts de faim.</span></span>
+      </span>
+
+      <span id="hte" class="tip-wrap">
+        <i id="htico" class="ti ti-flame"></i><span id="htv">4/5</span>
+        <span class="tip" id="htetip">Température intérieure<br><span style="color:var(--text2);font-size:10px;">Baisse si le feu est éteint. ≤1 = dégâts de froid.</span></span>
+      </span>
+
+      <span id="hsu" class="tip-wrap" style="color:var(--text2);">
+        Survivants :&nbsp;<span id="hsval">3/3</span>
+        <span class="tip">Survivants encore en vie<br><span style="color:var(--text2);font-size:10px;">Si tout le monde meurt, c'est la défaite.</span></span>
+      </span>
+
     </div>
   </div>
-
   <div class="main-grid">
     <div id="sc" class="scene"></div>
     <div class="journal-panel">
@@ -276,20 +103,15 @@
       <div id="log"></div>
     </div>
   </div>
-
   <div id="cb" class="char-bar">
-    <button id="endbtn" class="primary end-btn" disabled onclick="resolve()">
-      Fin de tour <i class="ti ti-arrow-right"></i>
-    </button>
+    <button id="endbtn" class="primary" style="margin-left:auto;" disabled onclick="resolve()">Fin de tour <i class="ti ti-arrow-right"></i></button>
   </div>
-
   <div id="ov" class="overlay">
     <p id="ot" class="overlay-title"></p>
     <p id="od" class="overlay-sub"></p>
     <button onclick="init()"><i class="ti ti-refresh"></i> Recommencer</button>
   </div>
 </div>
-
 <div class="cfg-toggle">
   <button onclick="toggleCfg()"><i class="ti ti-settings"></i> Réglages d'équilibrage <span id="cfgarr">▼</span></button>
 </div>
@@ -297,149 +119,70 @@
 
 <script>
 let CONF={
-  startPlanks:4,startFood:6,startTemp:4,
-  searchNeeded:5,
-  startSearchLeft:5,
-  forageChancePlanks:35,forageChanceFood:27,forageChanceBoth:16,
-  foragePlanksMin:1,foragePlanksMax:2,
-  plankBarricade:1,plankFire:2,fireDuration:3,
-  pressInterval:3,pressAmount:1,
-  fatMax:5,fatBarricade:2,fatSearch:1,fatForage:1,fatFire:1,fatDestroy:2,
-  fatSleep:3,fatTurn:1,
-  charDefs:[
-    {n:'Alex',role:'Protagoniste',mhp:3,barBonus:0},
-    {n:'Sarah',role:'Médecin',mhp:3,barBonus:0},
-    {n:'Marco',role:'Bricoleur',mhp:2,barBonus:1},
-  ],
-  furnitureDefs:[
-    {n:'Table basse',pl:2},{n:'Chaises',pl:3},{n:'Bibliothèque',pl:2},{n:'Armoire',pl:3},
-  ],
-  entryDefs:[
-    {n:'Porte principale',bar:3,maxBar:5,pres:1},
-    {n:'Fenêtre cuisine',bar:2,maxBar:3,pres:1},
-    {n:'Porte arrière',bar:2,maxBar:4,pres:1},
-  ],
+  startPlanks:4,startFood:6,startTemp:4,searchNeeded:5,startSearchLeft:5,
+  forageChancePlanks:35,forageChanceFood:27,forageChanceBoth:16,foragePlanksMin:1,foragePlanksMax:2,
+  plankBarricade:1,plankFire:2,fireDuration:3,pressInterval:3,pressAmount:1,
+  fatMax:5,fatBarricade:2,fatSearch:1,fatForage:1,fatFire:1,fatDestroy:2,fatSleep:3,fatTurn:1,
+  charDefs:[{n:'Alex',role:'Protagoniste',mhp:3,barBonus:0},{n:'Sarah',role:'Médecin',mhp:3,barBonus:0},{n:'Marco',role:'Bricoleur',mhp:2,barBonus:1}],
+  furnitureDefs:[{n:'Table basse',pl:2},{n:'Chaises',pl:3},{n:'Bibliothèque',pl:2},{n:'Armoire',pl:3}],
+  entryDefs:[{n:'Porte principale',bar:3,maxBar:5,pres:1},{n:'Fenêtre cuisine',bar:2,maxBar:3,pres:1},{n:'Porte arrière',bar:2,maxBar:4,pres:1}],
 };
-
 const STATIC_CFG=[
-  {title:'Ressources de départ ★',fields:[
-    {k:'startPlanks',l:'Planches',min:0,max:30},{k:'startFood',l:'Nourriture',min:0,max:30},{k:'startTemp',l:'Temp. initiale',min:1,max:5},
-  ]},
+  {title:'Ressources de départ ★',fields:[{k:'startPlanks',l:'Planches',min:0,max:30},{k:'startFood',l:'Nourriture',min:0,max:30},{k:'startTemp',l:'Temp. initiale',min:1,max:5}]},
   {title:'Objectif ★',fields:[{k:'searchNeeded',l:'Actions de recherche requises',min:1,max:30}]},
-  {title:'Fouille de la maison ★',note:'Rien trouvé = 100% − les trois chances (min. 0)',fields:[
-    {k:'startSearchLeft',l:'Fouilles disponibles',min:0,max:50},
-    {k:'forageChancePlanks',l:'Chance planches seules (%)',min:0,max:100},
-    {k:'forageChanceFood',l:'Chance nourriture seule (%)',min:0,max:100},
-    {k:'forageChanceBoth',l:'Chance les deux (%)',min:0,max:100},
-    {k:'foragePlanksMin',l:'Planches min',min:1,max:10},{k:'foragePlanksMax',l:'Planches max',min:1,max:10},
-  ]},
-  {title:'Feu & barricades',fields:[
-    {k:'plankBarricade',l:'Planches/barricade',min:0,max:5},
-    {k:'plankFire',l:'Planches/feu',min:0,max:8},
-    {k:'fireDuration',l:'Durée feu (tours)',min:1,max:20},
-  ]},
-  {title:'Zombies',fields:[
-    {k:'pressInterval',l:'Escalade toutes les N tours',min:1,max:20},
-    {k:'pressAmount',l:'+Pression par escalade',min:1,max:10},
-  ]},
-  {title:'Fatigue — coûts',fields:[
-    {k:'fatMax',l:'Seuil max',min:1,max:10},
-    {k:'fatBarricade',l:'Barricader',min:0,max:5},{k:'fatSearch',l:'Chercher sortie',min:0,max:5},
-    {k:'fatForage',l:'Fouiller',min:0,max:5},{k:'fatFire',l:'Alimenter feu',min:0,max:5},
-    {k:'fatDestroy',l:'Démanteler',min:0,max:5},
-  ]},
-  {title:'Fatigue — récupération',fields:[
-    {k:'fatTurn',l:'Récup. naturelle/tour',min:0,max:5},{k:'fatSleep',l:'Récup. sommeil',min:1,max:10},
-  ]},
+  {title:'Fouille ★',note:'Rien trouvé = 100% − les trois chances ci-dessus',fields:[{k:'startSearchLeft',l:'Fouilles disponibles',min:0,max:50},{k:'forageChancePlanks',l:'Chance planches (%)',min:0,max:100},{k:'forageChanceFood',l:'Chance nourriture (%)',min:0,max:100},{k:'forageChanceBoth',l:'Chance les deux (%)',min:0,max:100},{k:'foragePlanksMin',l:'Planches min',min:1,max:10},{k:'foragePlanksMax',l:'Planches max',min:1,max:10}]},
+  {title:'Feu & barricades',fields:[{k:'plankBarricade',l:'Planches/barricade',min:0,max:5},{k:'plankFire',l:'Planches/feu',min:0,max:8},{k:'fireDuration',l:'Durée feu (tours)',min:1,max:20}]},
+  {title:'Zombies',fields:[{k:'pressInterval',l:'Escalade toutes les N tours',min:1,max:20},{k:'pressAmount',l:'+Pression par escalade',min:1,max:10}]},
+  {title:'Fatigue — coûts',fields:[{k:'fatMax',l:'Seuil max',min:1,max:10},{k:'fatBarricade',l:'Barricader',min:0,max:5},{k:'fatSearch',l:'Chercher sortie',min:0,max:5},{k:'fatForage',l:'Fouiller',min:0,max:5},{k:'fatFire',l:'Alimenter feu',min:0,max:5},{k:'fatDestroy',l:'Démanteler',min:0,max:5}]},
+  {title:'Fatigue — récupération',fields:[{k:'fatTurn',l:'Récup. naturelle/tour',min:0,max:5},{k:'fatSleep',l:'Récup. sommeil',min:1,max:10}]},
 ];
-
 function buildCfg(){
   const p=document.getElementById('cfg');p.innerHTML='';
-  const rb=document.createElement('button');
-  rb.className='primary';rb.style.cssText='width:100%;justify-content:center;margin-bottom:14px;';
+  const rb=document.createElement('button');rb.className='primary';rb.style.cssText='width:100%;justify-content:center;margin-bottom:14px;';
   rb.innerHTML='<i class="ti ti-refresh"></i> Appliquer et recommencer';
-  rb.addEventListener('click',()=>{document.getElementById('cfg').style.display='none';document.getElementById('cfgarr').textContent='▼';init();});
+  rb.addEventListener('click',()=>{p.style.display='none';document.getElementById('cfgarr').textContent='▼';init();});
   p.appendChild(rb);
-  const note=document.createElement('p');note.className='cfg-note';
-  note.innerHTML='★ = s\'applique au prochain recommencer. Cliquez sur le bouton ci-dessus pour relancer.';
-  p.appendChild(note);
+  const note=document.createElement('p');note.style.cssText='font-size:11px;color:var(--text2);background:var(--bg3);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:16px;line-height:1.6;';
+  note.textContent='★ = s\'applique au prochain recommencer.';p.appendChild(note);
   const sw=document.createElement('div');
   STATIC_CFG.forEach(sec=>{
     const s=document.createElement('div');s.className='cfg-section';
-    s.innerHTML=`<p class="cfg-section-title">${sec.title}</p>${sec.note?`<p class="cfg-note-small">${sec.note}</p>`:''}`;
+    s.innerHTML=`<p class="cfg-section-title">${sec.title}</p>${sec.note?`<p style="font-size:10px;color:var(--text3);font-style:italic;margin-bottom:6px;">${sec.note}</p>`:''}`;
     const g=document.createElement('div');g.className='cfg-fields';
-    sec.fields.forEach(f=>{
-      const d=document.createElement('div');d.className='cfg-field';
-      d.innerHTML=`<label>${f.l}</label><input type="number" min="${f.min}" max="${f.max}" value="${CONF[f.k]}" data-k="${f.k}">`;
-      g.appendChild(d);
-    });
+    sec.fields.forEach(f=>{const d=document.createElement('div');d.className='cfg-field';d.innerHTML=`<label>${f.l}</label><input type="number" min="${f.min}" max="${f.max}" value="${CONF[f.k]}" data-k="${f.k}">`;g.appendChild(d);});
     s.appendChild(g);sw.appendChild(s);
   });
   sw.addEventListener('input',e=>{if(e.target.dataset.k)CONF[e.target.dataset.k]=+e.target.value;});
   p.appendChild(sw);
-  buildDynSection(p,'entryDefs','Accès à la maison',1,6,'Ajouter un accès',[
-    {f:'n',l:'Nom',type:'text',def:'Accès'},{f:'bar',l:'Barricade départ',type:'number',min:0,max:20,def:2},
-    {f:'maxBar',l:'Barricade max',type:'number',min:1,max:30,def:5},{f:'pres',l:'Pression départ',type:'number',min:0,max:10,def:1},
-  ]);
-  buildDynSection(p,'furnitureDefs','Meubles',0,10,'Ajouter un meuble',[
-    {f:'n',l:'Nom',type:'text',def:'Meuble'},{f:'pl',l:'Planches obtenues',type:'number',min:1,max:15,def:2},
-  ]);
-  buildDynSection(p,'charDefs','Personnages',1,5,'Ajouter un personnage',[
-    {f:'n',l:'Nom',type:'text',def:'Survivant'},{f:'role',l:'Rôle',type:'text',def:'Survivant'},
-    {f:'mhp',l:'Vie max',type:'number',min:1,max:10,def:3},{f:'barBonus',l:'Bonus barricade',type:'number',min:0,max:5,def:0},
-  ]);
+  buildDyn(p,'entryDefs','Accès à la maison',1,6,'Ajouter un accès',[{f:'n',l:'Nom',type:'text',def:'Accès'},{f:'bar',l:'Barricade départ',type:'number',min:0,max:20,def:2},{f:'maxBar',l:'Barricade max',type:'number',min:1,max:30,def:5},{f:'pres',l:'Pression départ',type:'number',min:0,max:10,def:1}]);
+  buildDyn(p,'furnitureDefs','Meubles',0,10,'Ajouter un meuble',[{f:'n',l:'Nom',type:'text',def:'Meuble'},{f:'pl',l:'Planches obtenues',type:'number',min:1,max:15,def:2}]);
+  buildDyn(p,'charDefs','Personnages',1,5,'Ajouter un personnage',[{f:'n',l:'Nom',type:'text',def:'Survivant'},{f:'role',l:'Rôle',type:'text',def:'Survivant'},{f:'mhp',l:'Vie max',type:'number',min:1,max:10,def:3},{f:'barBonus',l:'Bonus barricade',type:'number',min:0,max:5,def:0}]);
 }
-
-function buildDynSection(parent,key,title,minItems,maxItems,addLabel,fields){
+function buildDyn(parent,key,title,minI,maxI,addLbl,fields){
   const sec=document.createElement('div');sec.className='cfg-section';
-  const th=document.createElement('p');th.className='cfg-section-title';th.textContent=title+' ★';
-  sec.appendChild(th);const wrap=document.createElement('div');sec.appendChild(wrap);parent.appendChild(sec);
+  const th=document.createElement('p');th.className='cfg-section-title';th.textContent=title+' ★';sec.appendChild(th);
+  const wrap=document.createElement('div');sec.appendChild(wrap);parent.appendChild(sec);
   function refresh(){
     wrap.innerHTML='';
-    if(CONF[key].length<maxItems){
-      const btn=document.createElement('button');
-      btn.innerHTML=`<i class="ti ti-plus"></i>${addLabel}`;btn.style.marginBottom='10px';
-      btn.addEventListener('click',()=>{const item={};fields.forEach(f=>item[f.f]=f.def!==undefined?f.def:(f.type==='number'?f.min:''));CONF[key].push(item);refresh();});
-      wrap.appendChild(btn);
-    }
+    if(CONF[key].length<maxI){const btn=document.createElement('button');btn.innerHTML=`<i class="ti ti-plus"></i>${addLbl}`;btn.style.marginBottom='10px';btn.addEventListener('click',()=>{const item={};fields.forEach(f=>item[f.f]=f.def!==undefined?f.def:(f.type==='number'?f.min:''));CONF[key].push(item);refresh();});wrap.appendChild(btn);}
     CONF[key].forEach((item,i)=>{
       const card=document.createElement('div');card.className='dyn-card';
-      const top=document.createElement('div');top.className='dyn-card-header';
-      const ttl=document.createElement('span');ttl.className='dyn-card-title';ttl.textContent=item.n||`${title} ${i+1}`;
-      top.appendChild(ttl);
-      if(CONF[key].length>minItems){
-        const rm=document.createElement('button');rm.className='danger';rm.innerHTML='<i class="ti ti-x"></i> Supprimer';rm.style.fontSize='11px';
-        rm.addEventListener('click',()=>{CONF[key].splice(i,1);refresh();});top.appendChild(rm);
-      }
+      const top=document.createElement('div');top.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;';
+      const ttl=document.createElement('span');ttl.style.cssText='font-size:12px;font-weight:600;';ttl.textContent=item.n||`${title} ${i+1}`;top.appendChild(ttl);
+      if(CONF[key].length>minI){const rm=document.createElement('button');rm.className='danger';rm.innerHTML='<i class="ti ti-x"></i> Supprimer';rm.style.fontSize='11px';rm.addEventListener('click',()=>{CONF[key].splice(i,1);refresh();});top.appendChild(rm);}
       card.appendChild(top);
       const row=document.createElement('div');row.className='cfg-fields';
-      fields.forEach(field=>{
-        const d=document.createElement('div');d.className='cfg-field';
-        const lbl=document.createElement('label');lbl.textContent=field.l;
-        const inp=document.createElement('input');inp.type=field.type;inp.value=item[field.f];
-        if(field.type==='number'){inp.min=field.min;inp.max=field.max;}
-        inp.addEventListener('input',()=>{CONF[key][i][field.f]=inp.type==='number'?+inp.value:inp.value;if(field.f==='n')ttl.textContent=inp.value||`${title} ${i+1}`;});
-        d.appendChild(lbl);d.appendChild(inp);row.appendChild(d);
-      });
+      fields.forEach(field=>{const d=document.createElement('div');d.className='cfg-field';const lbl=document.createElement('label');lbl.textContent=field.l;const inp=document.createElement('input');inp.type=field.type;inp.value=item[field.f];if(field.type==='number'){inp.min=field.min;inp.max=field.max;}inp.addEventListener('input',()=>{CONF[key][i][field.f]=inp.type==='number'?+inp.value:inp.value;if(field.f==='n')ttl.textContent=inp.value||`${title} ${i+1}`;});d.appendChild(lbl);d.appendChild(inp);row.appendChild(d);});
       card.appendChild(row);wrap.appendChild(card);
     });
   }
   refresh();
 }
-
-function toggleCfg(){
-  const p=document.getElementById('cfg'),a=document.getElementById('cfgarr'),show=p.style.display==='none';
-  p.style.display=show?'block':'none';a.textContent=show?'▲':'▼';
-}
-
+function toggleCfg(){const p=document.getElementById('cfg'),a=document.getElementById('cfgarr'),show=p.style.display==='none';p.style.display=show?'block':'none';a.textContent=show?'▲':'▼';}
 let G,sel=null;
-
 function init(){
   document.getElementById('ov').classList.remove('show');sel=null;
-  G={
-    turn:1,sp:0,sn:CONF.searchNeeded,
-    planks:CONF.startPlanks,food:CONF.startFood,temp:CONF.startTemp,fire:0,
-    searchLeft:CONF.startSearchLeft,
+  G={turn:1,sp:0,sn:CONF.searchNeeded,planks:CONF.startPlanks,food:CONF.startFood,temp:CONF.startTemp,fire:0,searchLeft:CONF.startSearchLeft,
     furniture:CONF.furnitureDefs.map((f,i)=>({id:'f'+i,l:f.n,pl:f.pl,ok:true})),
     beds:[{id:'bed1',l:'Lit principal',pl:3,ok:true},{id:'bed2',l:'Canapé-lit',pl:2,ok:true}],
     entries:CONF.entryDefs.map((e,i)=>({id:'e'+i,l:e.n,bar:e.bar,mb:e.maxBar,pres:e.pres,chars:[]})),
@@ -447,111 +190,70 @@ function init(){
   };
   document.getElementById('log').innerHTML='';
   const np=Math.max(0,100-CONF.forageChancePlanks-CONF.forageChanceFood-CONF.forageChanceBoth);
-  addLog('Situation initiale',[
-    {t:'Des grognements percent la nuit. Le froid s\'installe.',c:''},
-    {t:`${G.chars.length} survivant(s) | ${G.entries.length} accès | ${G.furniture.length} meuble(s)`,c:''},
-    {t:`Fouille — pl:${CONF.forageChancePlanks}% nourr:${CONF.forageChanceFood}% les deux:${CONF.forageChanceBoth}% rien:${np}%`,c:'w'},
-    {t:`Objectif : ${G.sn} action(s) de recherche pour trouver la sortie.`,c:'g'},
-  ]);
+  addLog('Situation initiale',[{t:'Des grognements percent la nuit. Le froid s\'installe.',c:''},{t:`${G.chars.length} survivant(s) | ${G.entries.length} accès | ${G.furniture.length} meuble(s)`,c:''},{t:`Fouille — pl:${CONF.forageChancePlanks}% nourr:${CONF.forageChanceFood}% les deux:${CONF.forageChanceBoth}% rien:${np}%`,c:'w'},{t:`Objectif : ${G.sn} action(s) de recherche.`,c:'g'}]);
   draw();
 }
-
-function addLog(lbl,lines){
-  const l=document.getElementById('log'),d=document.createElement('div');d.className='log-entry';
-  d.innerHTML=`<div class="log-label">${lbl}</div>`+lines.map(x=>`<div class="log-line ${x.c}">${x.t}</div>`).join('');
-  l.appendChild(d);l.scrollTop=l.scrollHeight;
-}
-
+function addLog(lbl,lines){const l=document.getElementById('log'),d=document.createElement('div');d.className='log-entry';d.innerHTML=`<div class="log-label">${lbl}</div>`+lines.map(x=>`<div class="log-line ${x.c}">${x.t}</div>`).join('');l.appendChild(d);l.scrollTop=l.scrollHeight;}
 function draw(){hdr();renderSc();renderCh();}
-
 function hdr(){
   document.getElementById('ht').textContent=`Tour ${G.turn}`;
   const he=document.getElementById('he');
-  if(G.sp>=G.sn){he.textContent='Sortie déverrouillée !';he.style.color='var(--success)';}
-  else{he.textContent=`Sortie : ${G.sp}/${G.sn}`;he.style.color='var(--text2)';}
+  if(G.sp>=G.sn){he.textContent='Sortie déverrouillée !';he.style.color='var(--success)';}else{he.textContent=`Sortie : ${G.sp}/${G.sn}`;he.style.color='var(--text2)';}
   document.getElementById('hplv').textContent=G.planks;
   document.getElementById('hfov').textContent=G.food;
-  document.getElementById('htv').textContent=G.fire>0?`${G.temp}/5 (feu:${G.fire}t)`:`${G.temp}/5`;
-  const hte=document.getElementById('hte');
-  hte.style.color=G.fire>0?'var(--warning)':G.temp<=2?'var(--danger)':'var(--text2)';
-  document.getElementById('htico').className=G.fire>0?'ti ti-flame':'ti ti-wind';
+  const fa=G.fire>0;
+  document.getElementById('htv').textContent=fa?`${G.temp}/5 (feu:${G.fire}t)`:`${G.temp}/5`;
+  const hte=document.getElementById('hte');hte.style.color=fa?'var(--warning)':G.temp<=2?'var(--danger)':'var(--text2)';
+  document.getElementById('htico').className=fa?'ti ti-flame':'ti ti-wind';
+  const ft=document.getElementById('htetip');
+  if(ft){ft.innerHTML=fa?`Feu actif — ${G.fire} tour(s) restant(s)<br><span style="color:var(--text2);font-size:10px;">Température : ${G.temp}/5. Ralentit le refroidissement.</span>`:`Température intérieure : ${G.temp}/5<br><span style="color:var(--text2);font-size:10px;">Feu éteint — baisse de 1 par tour. ≤1 = dégâts de froid.</span>`;}
   const alive=G.chars.filter(c=>c.hp>0).length;
-  const hs=document.getElementById('hsu');
-  hs.textContent=`Survivants : ${alive}/${G.chars.length}`;
-  hs.style.color=alive<=1?'var(--danger)':'var(--text2)';
+  document.getElementById('hsval').textContent=`${alive}/${G.chars.length}`;
+  document.getElementById('hsu').style.color=alive<=1?'var(--danger)':'var(--text2)';
 }
-
 function mkBar(v,max,col){return `<div class="mini-bar"><div class="mini-bar-fill" style="width:${Math.min(100,Math.round(v/max*100))}%;background:${col};"></div></div>`;}
 function mk(parent,tag,cls,style){const e=document.createElement(tag);if(cls)e.className=cls;if(style)e.style.cssText=style;parent.appendChild(e);return e;}
-
 function renderSc(){
-  const sc=document.getElementById('sc');sc.innerHTML='';
-  const can=sel&&sel.hp>0;
-  if(sel&&sel.hp>0){
-    const ex=sel.fat>=CONF.fatMax;
-    const h=mk(sc,'p','','font-size:11px;margin:0 0 8px;');
-    if(ex){h.style.color='var(--danger)';h.innerHTML=`<i class="ti ti-alert-triangle" style="margin-right:3px;"></i>${sel.n} est épuisé·e — prendra des dégâts si actif·ve.`;}
-    else{h.style.color='var(--warning)';h.innerHTML=`<i class="ti ti-cursor-text" style="margin-right:3px;"></i>Assigner ${sel.n} à une zone.`;}
-  }
-  mk(sc,'p','section-label').textContent='Défenses';
+  const sc=document.getElementById('sc');sc.innerHTML='';const can=sel&&sel.hp>0;
+  if(sel&&sel.hp>0){const ex=sel.fat>=CONF.fatMax;const h=mk(sc,'p','','font-size:11px;margin:0 0 8px;');if(ex){h.style.color='var(--danger)';h.innerHTML=`<i class="ti ti-alert-triangle" style="margin-right:3px;"></i>${sel.n} est épuisé·e.`;}else{h.style.color='var(--warning)';h.innerHTML=`<i class="ti ti-cursor-text" style="margin-right:3px;"></i>Assigner ${sel.n} à une zone.`;}}
+  mk(sc,'p','slbl').textContent='Défenses';
   G.entries.forEach(ep=>{
-    const nopl=G.planks<CONF.plankBarricade;
-    const bc=ep.bar===0?'var(--danger)':ep.bar<=1?'var(--warning)':'#d4820a';
+    const nopl=G.planks<CONF.plankBarricade;const bc=ep.bar===0?'var(--danger)':ep.bar<=1?'var(--warning)':'#d4820a';
     const names=ep.chars.map(id=>G.chars.find(c=>c.id===id)?.n).filter(Boolean).join(', ');
     const d=mk(sc,'div','zone'+(can&&!nopl?' pick':can&&nopl?' off':''));
-    d.innerHTML=`<div class="zone-header"><span class="zone-title"><i class="ti ti-shield" style="margin-right:4px;"></i>${ep.l}</span><span style="font-size:11px;color:var(--danger);"><i class="ti ti-alert-triangle"></i> ${ep.pres}</span></div>${mkBar(ep.bar,ep.mb,bc)}<div class="zone-footer"><span>${ep.bar}/${ep.mb} <span style="color:var(--warning);">(${CONF.plankBarricade}pl·fat+${CONF.fatBarricade})</span></span>${names?`<span style="color:var(--warning);">${names}</span>`:''}</div>`;
+    d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;font-weight:500;"><i class="ti ti-shield" style="margin-right:4px;"></i>${ep.l}</span><span style="font-size:11px;color:var(--danger);"><i class="ti ti-alert-triangle"></i> ${ep.pres}</span></div>${mkBar(ep.bar,ep.mb,bc)}<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);"><span>${ep.bar}/${ep.mb} <span style="color:var(--warning);">(${CONF.plankBarricade}pl·fat+${CONF.fatBarricade})</span></span>${names?`<span style="color:var(--warning);">${names}</span>`:''}</div>`;
     d.addEventListener('click',()=>assign('bar_'+ep.id));
   });
-  mk(sc,'p','section-label').textContent='Sortie de secours';
+  mk(sc,'p','slbl').textContent='Sortie de secours';
   const snames=G.chars.filter(c=>c.action==='search').map(c=>c.n).join(', ');
   const sd=mk(sc,'div','zone'+(can?' pick':''));
-  sd.innerHTML=`<div class="zone-header"><span class="zone-title"><i class="ti ti-logout" style="margin-right:4px;"></i>Chercher une sortie</span><span class="zone-sub">fat+${CONF.fatSearch}</span></div>${mkBar(G.sp,G.sn,'var(--success)')}<div class="zone-footer"><span>${G.sp}/${G.sn}</span>${snames?`<span style="color:var(--success);">${snames}</span>`:''}</div>`;
+  sd.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;font-weight:500;"><i class="ti ti-logout" style="margin-right:4px;"></i>Chercher une sortie</span><span style="font-size:11px;color:var(--text2);">fat+${CONF.fatSearch}</span></div>${mkBar(G.sp,G.sn,'var(--success)')}<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);"><span>${G.sp}/${G.sn}</span>${snames?`<span style="color:var(--success);">${snames}</span>`:''}</div>`;
   sd.addEventListener('click',()=>assign('search'));
-  mk(sc,'p','section-label').textContent='Ressources';
-  const noFor=G.searchLeft<=0;
-  const fnames=G.chars.filter(c=>c.action==='forage').map(c=>c.n).join(', ');
-  const np2=Math.max(0,100-CONF.forageChancePlanks-CONF.forageChanceFood-CONF.forageChanceBoth);
+  mk(sc,'p','slbl').textContent='Ressources';
+  const noFor=G.searchLeft<=0;const fnames=G.chars.filter(c=>c.action==='forage').map(c=>c.n).join(', ');
+  const np=Math.max(0,100-CONF.forageChancePlanks-CONF.forageChanceFood-CONF.forageChanceBoth);
   const fd=mk(sc,'div','zone'+(can&&!noFor?' pick':noFor?' off':''));
-  fd.innerHTML=`<div class="zone-header"><span class="zone-title"><i class="ti ti-search" style="margin-right:4px;"></i>Fouiller la maison</span><span class="zone-sub">${G.searchLeft} restante(s)·fat+${CONF.fatForage}</span></div><div style="font-size:10px;color:var(--text3);margin-top:3px;">pl:${CONF.forageChancePlanks}% · nourr:${CONF.forageChanceFood}% · les deux:${CONF.forageChanceBoth}% · rien:${np2}%${fnames?` <span style="color:var(--info);">${fnames}</span>`:''}</div>`;
+  fd.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;"><span style="font-size:12px;font-weight:500;"><i class="ti ti-search" style="margin-right:4px;"></i>Fouiller la maison</span><span style="font-size:11px;color:var(--text2);">${G.searchLeft} restante(s)·fat+${CONF.fatForage}</span></div><div style="font-size:10px;color:var(--text3);margin-top:2px;">pl:${CONF.forageChancePlanks}% · nourr:${CONF.forageChanceFood}% · les deux:${CONF.forageChanceBoth}% · rien:${np}%${fnames?` <span style="color:var(--info);">${fnames}</span>`:''}</div>`;
   fd.addEventListener('click',()=>assign('forage'));
-  if(G.furniture.length>0){
-    mk(sc,'p','','font-size:11px;color:var(--text2);margin:7px 0 4px;').textContent='Meubles :';
-    const frow=mk(sc,'div','chip-row');
-    G.furniture.forEach(f=>{
-      const c=mk(frow,'div','chip'+(!f.ok?' gone':can?' pick':''));
-      c.innerHTML=`<i class="ti ti-armchair"></i>${f.l} <span style="color:var(--warning);">+${f.pl}pl</span><span style="font-size:10px;color:var(--text3);"> fat+${CONF.fatDestroy}</span>`;
-      c.addEventListener('click',()=>assign('dest_'+f.id));
-    });
-  }
-  mk(sc,'p','section-label').textContent='Sommeil';
+  if(G.furniture.length>0){mk(sc,'p','','font-size:11px;color:var(--text2);margin:7px 0 4px;').textContent='Meubles :';const frow=mk(sc,'div','','display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px;');G.furniture.forEach(f=>{const c=mk(frow,'div','chip'+(!f.ok?' gone':can?' pick':''));c.innerHTML=`<i class="ti ti-armchair"></i>${f.l} <span style="color:var(--warning);">+${f.pl}pl</span><span style="font-size:10px;color:var(--text3);"> fat+${CONF.fatDestroy}</span>`;c.addEventListener('click',()=>assign('dest_'+f.id));});}
+  mk(sc,'p','slbl').textContent='Sommeil';
   G.beds.forEach(bed=>{
     const bc=mk(sc,'div','bed-card');
-    if(!bed.ok){bc.innerHTML=`<div class="bed-header"><span class="zone-title" style="text-decoration:line-through;color:var(--text3);"><i class="ti ti-bed" style="margin-right:4px;"></i>${bed.l}</span><span style="font-size:11px;color:var(--text3);">Démantélé</span></div>`;}
-    else{
-      const sl=G.chars.find(c=>c.action==='sleep_'+bed.id);
-      bc.innerHTML=`<div class="bed-header"><span class="zone-title"><i class="ti ti-bed" style="margin-right:4px;"></i>${bed.l}</span>${sl?`<span style="font-size:11px;color:var(--info);">${sl.n} dort</span>`:`<span style="font-size:11px;color:var(--text2);">Libre</span>`}</div>`;
-      const br=mk(bc,'div','bed-actions');
-      const sb=document.createElement('button');sb.innerHTML=`<i class="ti ti-moon"></i>Dormir (fat−${CONF.fatSleep})`;sb.style.cssText='font-size:11px;padding:5px 9px;flex:1;';sb.disabled=!can;sb.addEventListener('click',()=>assign('sleep_'+bed.id));
-      const db=document.createElement('button');db.className='danger';db.innerHTML=`<i class="ti ti-trash"></i>Démanteler (+${bed.pl}pl)`;db.style.cssText='font-size:11px;padding:5px 9px;flex:1;';db.disabled=!can;db.addEventListener('click',()=>assign('dest_bed_'+bed.id));
-      br.appendChild(sb);br.appendChild(db);
-    }
+    if(!bed.ok){bc.innerHTML=`<div style="display:flex;justify-content:space-between;"><span style="font-size:12px;font-weight:500;color:var(--text3);text-decoration:line-through;"><i class="ti ti-bed" style="margin-right:4px;"></i>${bed.l}</span><span style="font-size:11px;color:var(--text3);">Démantélé</span></div>`;}
+    else{const sl=G.chars.find(c=>c.action==='sleep_'+bed.id);bc.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;"><span style="font-size:12px;font-weight:500;"><i class="ti ti-bed" style="margin-right:4px;"></i>${bed.l}</span>${sl?`<span style="font-size:11px;color:var(--info);">${sl.n} dort</span>`:`<span style="font-size:11px;color:var(--text2);">Libre</span>`}</div>`;const br=mk(bc,'div','','display:flex;gap:6px;');const sb=document.createElement('button');sb.innerHTML=`<i class="ti ti-moon"></i>Dormir (fat−${CONF.fatSleep})`;sb.style.cssText='font-size:11px;padding:5px 9px;flex:1;';sb.disabled=!can;sb.addEventListener('click',()=>assign('sleep_'+bed.id));const db=document.createElement('button');db.className='danger';db.innerHTML=`<i class="ti ti-trash"></i>Démanteler (+${bed.pl}pl)`;db.style.cssText='font-size:11px;padding:5px 9px;flex:1;';db.disabled=!can;db.addEventListener('click',()=>assign('dest_bed_'+bed.id));br.appendChild(sb);br.appendChild(db);}
   });
-  mk(sc,'p','section-label').textContent='Feu de camp';
-  const noFire=G.planks<CONF.plankFire;
-  const firenames=G.chars.filter(c=>c.action==='fire').map(c=>c.n).join(', ');
+  mk(sc,'p','slbl').textContent='Feu de camp';
+  const noFire=G.planks<CONF.plankFire;const firenames=G.chars.filter(c=>c.action==='fire').map(c=>c.n).join(', ');
   const fdiv=mk(sc,'div','zone'+(can&&!noFire?' pick':can&&noFire?' off':''));
-  fdiv.innerHTML=`<div class="zone-header"><span class="zone-title"><i class="ti ti-flame" style="margin-right:4px;"></i>Entretenir le feu</span><span style="font-size:11px;color:var(--warning);">${CONF.plankFire}pl → +${CONF.fireDuration}t · fat+${CONF.fatFire}</span></div><div style="font-size:11px;color:${G.fire>0?'var(--success)':'var(--danger)'};margin-top:4px;">${G.fire>0?`Actif — ${G.fire} tour(s)`:'Éteint'}${firenames?` · <span style="color:var(--warning);">${firenames}</span>`:''}</div>${noFire&&can?`<div style="font-size:11px;color:var(--danger);margin-top:3px;">Planches insuffisantes.</div>`:''}`;
+  fdiv.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;"><span style="font-size:12px;font-weight:500;"><i class="ti ti-flame" style="margin-right:4px;"></i>Entretenir le feu</span><span style="font-size:11px;color:var(--warning);">${CONF.plankFire}pl → +${CONF.fireDuration}t · fat+${CONF.fatFire}</span></div><div style="font-size:11px;color:${G.fire>0?'var(--success)':'var(--danger)'};margin-top:3px;">${G.fire>0?`Actif — ${G.fire} tour(s)`:'Éteint'}${firenames?` · <span style="color:var(--warning);">${firenames}</span>`:''}</div>${noFire&&can?`<div style="font-size:11px;color:var(--danger);margin-top:2px;">Planches insuffisantes.</div>`:''}`;
   fdiv.addEventListener('click',()=>assign('fire'));
 }
-
 function renderCh(){
-  const cb=document.getElementById('cb');cb.querySelectorAll('.char-card').forEach(c=>c.remove());
-  const btn=document.getElementById('endbtn');
+  const cb=document.getElementById('cb');cb.querySelectorAll('.char-card').forEach(c=>c.remove());const btn=document.getElementById('endbtn');
   G.chars.forEach(ch=>{
     const card=mk(cb,'div','char-card'+(sel?.id===ch.id?' on':'')+(ch.hp<=0?' dead':''));
     const hearts=Array.from({length:ch.mhp},(_,i)=>`<i class="ti ti-heart" style="font-size:12px;color:${i<ch.hp?'var(--danger)':'#3a4a65'};"></i>`).join('');
-    const ratio=ch.fat/CONF.fatMax;
-    const fatCol=ratio>=1?'var(--danger)':ratio>=0.6?'var(--warning)':'var(--success)';
+    const ratio=ch.fat/CONF.fatMax;const fatCol=ratio>=1?'var(--danger)':ratio>=0.6?'var(--warning)':'var(--success)';
     let alab='Sans tâche',acol='var(--text3)';
     if(ch.action==='search'){alab='Cherche sortie';acol='var(--success)';}
     else if(ch.action==='forage'){alab='Fouille';acol='var(--info)';}
@@ -560,13 +262,12 @@ function renderCh(){
     else if(ch.action?.startsWith('dest_bed_')){alab='Démantèle lit';acol='var(--danger)';}
     else if(ch.action?.startsWith('bar_')){const ep=G.entries.find(e=>e.id===ch.action.replace('bar_',''));alab=`Barricade ${ep?.l}`;acol='var(--warning)';}
     else if(ch.action?.startsWith('dest_')){const f=G.furniture.find(f=>f.id===ch.action.replace('dest_',''));alab=`Démantèle ${f?.l}`;acol='var(--danger)';}
-    card.innerHTML=`<div class="char-name">${ch.n}</div><div class="char-role">${ch.role}</div><div class="char-hearts">${hearts}</div><div class="char-fatbar"><div class="char-fatbar-fill" style="width:${Math.min(100,Math.round(ratio*100))}%;background:${fatCol};"></div></div><div class="char-fatlbl" style="color:${fatCol};">${ratio>=1?'Épuisé·e':ratio>=0.6?'Fatigué·e':'En forme'} ${ch.fat}/${CONF.fatMax}</div><div class="char-action" style="color:${acol};">${alab}</div>`;
+    card.innerHTML=`<div style="font-size:12px;font-weight:600;margin-bottom:1px;">${ch.n}</div><div style="font-size:10px;color:var(--text2);margin-bottom:4px;">${ch.role}</div><div style="display:flex;gap:2px;margin-bottom:4px;">${hearts}</div><div style="height:3px;background:var(--bg);border-radius:2px;margin-bottom:2px;"><div style="height:100%;width:${Math.min(100,Math.round(ratio*100))}%;background:${fatCol};border-radius:2px;transition:width .3s;"></div></div><div style="font-size:10px;color:${fatCol};margin-bottom:4px;">${ratio>=1?'Épuisé·e':ratio>=0.6?'Fatigué·e':'En forme'} ${ch.fat}/${CONF.fatMax}</div><div style="font-size:10px;color:${acol};line-height:1.3;">${alab}</div>`;
     card.addEventListener('click',()=>{if(ch.hp<=0)return;sel=sel?.id===ch.id?null:ch;draw();});
     cb.insertBefore(card,btn);
   });
   btn.disabled=!G.chars.filter(c=>c.hp>0).every(c=>c.action!==null);
 }
-
 function assign(action){
   if(!sel||sel.hp<=0)return;
   if(sel.action?.startsWith('bar_')){const ep=G.entries.find(e=>e.id===sel.action.replace('bar_',''));if(ep)ep.chars=ep.chars.filter(id=>id!==sel.id);}
@@ -574,69 +275,31 @@ function assign(action){
   if(action.startsWith('bar_')){const ep=G.entries.find(e=>e.id===action.replace('bar_',''));if(ep&&!ep.chars.includes(sel.id))ep.chars.push(sel.id);}
   sel=null;draw();
 }
-
 function resolve(){
   const L=[];
   G.chars.forEach(ch=>{
     if(ch.hp<=0||!ch.action)return;
-    if(ch.action==='search'){G.sp=Math.min(G.sn,G.sp+1);ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatSearch);L.push({t:`${ch.n} explore la maison. (${G.sp}/${G.sn})`,c:'g'});}
-    else if(ch.action==='forage'&&G.searchLeft>0){
-      G.searchLeft--;ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatForage);
-      const r=Math.random()*100;const cp=CONF.forageChancePlanks,cf=cp+CONF.forageChanceFood,cb2=cf+CONF.forageChanceBoth;
-      if(r<cp){const n=CONF.foragePlanksMin+Math.floor(Math.random()*(CONF.foragePlanksMax-CONF.foragePlanksMin+1));G.planks+=n;L.push({t:`${ch.n} trouve ${n} planche(s). (${G.planks})`,c:'g'});}
-      else if(r<cf){G.food++;L.push({t:`${ch.n} déniche une ration. (${G.food})`,c:'g'});}
-      else if(r<cb2){G.planks++;G.food++;L.push({t:`${ch.n} trouve planches et nourriture.`,c:'g'});}
-      else L.push({t:`${ch.n} fouille mais ne trouve rien.`,c:''});
-    }
-    else if(ch.action==='fire'){
-      if(G.planks>=CONF.plankFire){G.planks-=CONF.plankFire;G.fire+=CONF.fireDuration;G.temp=Math.min(5,G.temp+1);ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatFire);L.push({t:`${ch.n} alimente le feu (+${CONF.fireDuration}t · Temp ${G.temp}/5 · pl:${G.planks})`,c:'g'});}
-      else L.push({t:`${ch.n} : planches insuffisantes pour le feu.`,c:'d'});
-    }
-    else if(ch.action.startsWith('bar_')){
-      const ep=G.entries.find(e=>e.id===ch.action.replace('bar_',''));
-      if(ep){if(G.planks>=CONF.plankBarricade){G.planks-=CONF.plankBarricade;const gain=1+(ch.barBonus||0);ep.bar=Math.min(ep.mb,ep.bar+gain);ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatBarricade);L.push({t:`${ch.n} renforce ${ep.l}. (${ep.bar}/${ep.mb} · pl:${G.planks})`,c:''});}
-      else L.push({t:`${ch.n} : plus de planches !`,c:'d'});}
-    }
-    else if(ch.action.startsWith('dest_bed_')){
-      const bed=G.beds.find(b=>b.id===ch.action.replace('dest_bed_',''));
-      if(bed&&bed.ok){bed.ok=false;G.planks+=bed.pl;ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatDestroy);L.push({t:`${ch.n} démantèle ${bed.l} : +${bed.pl}pl (${G.planks})`,c:'w'});}
-    }
-    else if(ch.action.startsWith('dest_')){
-      const f=G.furniture.find(f=>f.id===ch.action.replace('dest_',''));
-      if(f&&f.ok){f.ok=false;G.planks+=f.pl;ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatDestroy);L.push({t:`${ch.n} démantèle ${f.l} : +${f.pl}pl (${G.planks})`,c:'w'});}
-    }
-    else if(ch.action.startsWith('sleep_')){
-      const bed=G.beds.find(b=>b.id===ch.action.replace('sleep_','')&&b.ok);
-      if(bed){ch.fat=Math.max(0,ch.fat-CONF.fatSleep);L.push({t:`${ch.n} se repose dans ${bed.l}. Fatigue : ${ch.fat}/${CONF.fatMax}.`,c:'g'});}
-    }
+    if(ch.action==='search'){G.sp=Math.min(G.sn,G.sp+1);ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatSearch);L.push({t:`${ch.n} explore. (${G.sp}/${G.sn})`,c:'g'});}
+    else if(ch.action==='forage'&&G.searchLeft>0){G.searchLeft--;ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatForage);const r=Math.random()*100;const cp=CONF.forageChancePlanks,cf=cp+CONF.forageChanceFood,cb2=cf+CONF.forageChanceBoth;if(r<cp){const n=CONF.foragePlanksMin+Math.floor(Math.random()*(CONF.foragePlanksMax-CONF.foragePlanksMin+1));G.planks+=n;L.push({t:`${ch.n} trouve ${n} planche(s). (${G.planks})`,c:'g'});}else if(r<cf){G.food++;L.push({t:`${ch.n} déniche une ration. (${G.food})`,c:'g'});}else if(r<cb2){G.planks++;G.food++;L.push({t:`${ch.n} trouve planches et nourriture.`,c:'g'});}else L.push({t:`${ch.n} fouille mais ne trouve rien.`,c:''});}
+    else if(ch.action==='fire'){if(G.planks>=CONF.plankFire){G.planks-=CONF.plankFire;G.fire+=CONF.fireDuration;G.temp=Math.min(5,G.temp+1);ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatFire);L.push({t:`${ch.n} alimente le feu. (Temp ${G.temp}/5)`,c:'g'});}else L.push({t:`${ch.n} : planches insuffisantes.`,c:'d'});}
+    else if(ch.action.startsWith('bar_')){const ep=G.entries.find(e=>e.id===ch.action.replace('bar_',''));if(ep){if(G.planks>=CONF.plankBarricade){G.planks-=CONF.plankBarricade;const gain=1+(ch.barBonus||0);ep.bar=Math.min(ep.mb,ep.bar+gain);ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatBarricade);L.push({t:`${ch.n} renforce ${ep.l}. (${ep.bar}/${ep.mb})`,c:''});}else L.push({t:`${ch.n} : plus de planches !`,c:'d'});}}
+    else if(ch.action.startsWith('dest_bed_')){const bed=G.beds.find(b=>b.id===ch.action.replace('dest_bed_',''));if(bed&&bed.ok){bed.ok=false;G.planks+=bed.pl;ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatDestroy);L.push({t:`${ch.n} démantèle ${bed.l} : +${bed.pl}pl`,c:'w'});}}
+    else if(ch.action.startsWith('dest_')){const f=G.furniture.find(f=>f.id===ch.action.replace('dest_',''));if(f&&f.ok){f.ok=false;G.planks+=f.pl;ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatDestroy);L.push({t:`${ch.n} démantèle ${f.l} : +${f.pl}pl`,c:'w'});}}
+    else if(ch.action.startsWith('sleep_')){const bed=G.beds.find(b=>b.id===ch.action.replace('sleep_','')&&b.ok);if(bed){ch.fat=Math.max(0,ch.fat-CONF.fatSleep);L.push({t:`${ch.n} se repose. Fatigue : ${ch.fat}/${CONF.fatMax}.`,c:'g'});}}
   });
-  G.chars.forEach(ch=>{
-    if(ch.hp<=0)return;
-    if(ch.fat>=CONF.fatMax&&!ch.action?.startsWith('sleep_')){ch.hp=Math.max(0,ch.hp-1);L.push({t:`${ch.n} s'effondre d'épuisement ! (${ch.hp}/${ch.mhp})`,c:'d'});}
-    if(!ch.action?.startsWith('sleep_'))ch.fat=Math.max(0,ch.fat-CONF.fatTurn);
-  });
-  if(G.food>0){G.food--;if(!G.food)L.push({t:'Dernière ration — plus de nourriture !',c:'w'});else L.push({t:`Repas. Nourriture : ${G.food}.`,c:''});}
-  else{const a=G.chars.filter(c=>c.hp>0);if(a.length){const v=a[Math.floor(Math.random()*a.length)];v.hp=Math.max(0,v.hp-1);L.push({t:`${v.n} souffre de la faim. (${v.hp}/${v.mhp})`,c:'d'});}}
-  if(G.fire>0){G.fire--;if(!G.fire){G.temp=Math.max(1,G.temp-1);L.push({t:`Le feu s'éteint. Temp : ${G.temp}/5.`,c:'w'});}}
-  else{G.temp=Math.max(1,G.temp-1);if(G.temp<=1){const a=G.chars.filter(c=>c.hp>0);if(a.length){const v=a[Math.floor(Math.random()*a.length)];v.hp=Math.max(0,v.hp-1);L.push({t:`Froid glacial ! ${v.n} souffre. (${v.hp}/${v.mhp})`,c:'d'});}}else L.push({t:`Température : ${G.temp}/5.`,c:'w'});}
-  G.entries.forEach(ep=>{
-    if(ep.bar>0){ep.bar=Math.max(0,ep.bar-ep.pres);if(!ep.bar)L.push({t:`Barricade tombée : ${ep.l} !`,c:'d'});else L.push({t:`Zombies à ${ep.l}. Barricade : ${ep.bar}/${ep.mb}.`,c:''});}
-    else{const a=G.chars.filter(c=>c.hp>0);if(a.length){const v=a[Math.floor(Math.random()*a.length)];v.hp=Math.max(0,v.hp-1);L.push({t:`Brèche à ${ep.l} ! ${v.n} blessé·e. (${v.hp}/${v.mhp})`,c:'d'});}}
-  });
-  if(G.turn%CONF.pressInterval===0){G.entries.forEach(ep=>ep.pres+=CONF.pressAmount);L.push({t:`La horde grossit ! +${CONF.pressAmount} pression sur chaque accès.`,c:'d'});}
+  G.chars.forEach(ch=>{if(ch.hp<=0)return;if(ch.fat>=CONF.fatMax&&!ch.action?.startsWith('sleep_')){ch.hp=Math.max(0,ch.hp-1);L.push({t:`${ch.n} s'effondre d'épuisement ! (${ch.hp}/${ch.mhp})`,c:'d'});}if(!ch.action?.startsWith('sleep_'))ch.fat=Math.max(0,ch.fat-CONF.fatTurn);});
+  if(G.food>0){G.food--;if(!G.food)L.push({t:'Dernière ration !',c:'w'});else L.push({t:`Repas. Nourriture : ${G.food}.`,c:''});}else{const a=G.chars.filter(c=>c.hp>0);if(a.length){const v=a[Math.floor(Math.random()*a.length)];v.hp=Math.max(0,v.hp-1);L.push({t:`${v.n} souffre de la faim. (${v.hp}/${v.mhp})`,c:'d'});}}
+  if(G.fire>0){G.fire--;if(!G.fire){G.temp=Math.max(1,G.temp-1);L.push({t:`Le feu s'éteint. Temp : ${G.temp}/5.`,c:'w'});}}else{G.temp=Math.max(1,G.temp-1);if(G.temp<=1){const a=G.chars.filter(c=>c.hp>0);if(a.length){const v=a[Math.floor(Math.random()*a.length)];v.hp=Math.max(0,v.hp-1);L.push({t:`Froid glacial ! ${v.n} souffre.`,c:'d'});}}else L.push({t:`Température : ${G.temp}/5.`,c:'w'});}
+  G.entries.forEach(ep=>{if(ep.bar>0){ep.bar=Math.max(0,ep.bar-ep.pres);if(!ep.bar)L.push({t:`Barricade tombée : ${ep.l} !`,c:'d'});else L.push({t:`Zombies à ${ep.l}. Barricade : ${ep.bar}/${ep.mb}.`,c:''});}else{const a=G.chars.filter(c=>c.hp>0);if(a.length){const v=a[Math.floor(Math.random()*a.length)];v.hp=Math.max(0,v.hp-1);L.push({t:`Brèche à ${ep.l} ! ${v.n} blessé·e.`,c:'d'});}}});
+  if(G.turn%CONF.pressInterval===0){G.entries.forEach(ep=>ep.pres+=CONF.pressAmount);L.push({t:`La horde grossit ! +${CONF.pressAmount} pression.`,c:'d'});}
   G.chars.forEach(c=>{c.action=null;});G.entries.forEach(ep=>{ep.chars=[];});
   addLog(`Tour ${G.turn}`,L);G.turn++;
   const alive=G.chars.filter(c=>c.hp>0);
-  if(!alive.length){showOv('Tout le monde est mort.','La nuit a eu raison du groupe. Personne ne s\'en est sorti vivant.','var(--danger)');return;}
-  if(G.sp>=G.sn){showOv('Échappée réussie.',`${alive.length} survivant(s) ont fui dans la nuit. Les grognements s'éloignent peu à peu.`,'var(--success)');return;}
+  if(!alive.length){showOv('Tout le monde est mort.','La nuit a eu raison du groupe.','var(--danger)');return;}
+  if(G.sp>=G.sn){showOv('Échappée réussie.',`${alive.length} survivant(s) ont fui dans la nuit.`,'var(--success)');return;}
   draw();
 }
-
-function showOv(t,tx,c){
-  document.getElementById('ot').textContent=t;document.getElementById('ot').style.color=c;
-  document.getElementById('od').textContent=tx;document.getElementById('ov').classList.add('show');
-}
-
+function showOv(t,tx,c){document.getElementById('ot').textContent=t;document.getElementById('ot').style.color=c;document.getElementById('od').textContent=tx;document.getElementById('ov').classList.add('show');}
 buildCfg();init();
 </script>
 </body>
