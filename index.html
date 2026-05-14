@@ -549,10 +549,11 @@ function renderSc(){
     const bc=ep.bar===0?'var(--danger)':ep.bar<=1?'var(--warning)':'#d4820a';
     const names=ep.chars.map(id=>G.chars.find(c=>c.id===id)?.n).filter(Boolean).join(', ');
     const breachClass=ep.breached?' breached':'';
-    // Breached entries are always clickable when a char is selected (to assign repair)
+    const sacrificeMode=ep.breached&&nopl;
     const clickable=can&&(ep.breached||!nopl);
     const d=mk(sc,'div','zone'+breachClass+(can&&!clickable?' off':clickable?' pick':''));
-    d.innerHTML=`<div class="zone-header"><span class="zone-title"><i class="ti ti-shield" style="margin-right:4px;"></i>${ep.l}</span><span style="font-size:11px;color:var(--danger);"><i class="ti ti-alert-triangle"></i> ${ep.pres}</span></div>${mkBar(ep.bar,ep.mb,bc)}<div class="zone-footer"><span>${ep.bar}/${ep.mb} <span style="color:var(--warning);">(${CONF.plankBarricade}pl·fat+${CONF.fatBarricade})</span></span>${names?`<span style="color:var(--warning);">${names}</span>`:''}</div>${ep.breached?`<div class="breach-warn"><i class="ti ti-alert-triangle"></i> BRÈCHE OUVERTE — colmatez ce tour !</div>`:''}`;
+    const breachFooter=ep.breached?(sacrificeMode?`<div class="breach-warn"><i class="ti ti-skull"></i> BRÈCHE — plus de planches. Assigner = sacrifice.</div>`:`<div class="breach-warn"><i class="ti ti-alert-triangle"></i> BRÈCHE OUVERTE — colmatez ce tour !</div>`):'';
+    d.innerHTML=`<div class="zone-header"><span class="zone-title"><i class="ti ti-shield" style="margin-right:4px;"></i>${ep.l}</span><span style="font-size:11px;color:var(--danger);"><i class="ti ti-alert-triangle"></i> ${ep.pres}</span></div>${mkBar(ep.bar,ep.mb,bc)}<div class="zone-footer"><span>${ep.bar}/${ep.mb} <span style="color:var(--warning);">(${CONF.plankBarricade}pl·fat+${CONF.fatBarricade})</span></span>${names?`<span style="color:var(--warning);">${names}</span>`:''}</div>${breachFooter}`;
     d.addEventListener('click',()=>assign('bar_'+ep.id));
   });
   mk(sc,'p','section-label').textContent='Sortie de secours';
@@ -647,8 +648,18 @@ function resolve(){
     }
     else if(ch.action.startsWith('bar_')){
       const ep=G.entries.find(e=>e.id===ch.action.replace('bar_',''));
-      if(ep){if(G.planks>=CONF.plankBarricade){G.planks-=CONF.plankBarricade;const gain=1+(ch.barBonus||0);ep.bar=Math.min(ep.mb,ep.bar+gain);if(ep.breached){ep.breached=false;L.push({t:`${ch.n} colmate la brèche à ${ep.l} ! (${ep.bar}/${ep.mb} · pl:${G.planks})`,c:'g'});}else{ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatBarricade);L.push({t:`${ch.n} renforce ${ep.l}. (${ep.bar}/${ep.mb} · pl:${G.planks})`,c:'',});}}
-      else L.push({t:`${ch.n} : plus de planches !`,c:'d'});}
+      if(ep){
+        if(G.planks>=CONF.plankBarricade){
+          G.planks-=CONF.plankBarricade;const gain=1+(ch.barBonus||0);ep.bar=Math.min(ep.mb,ep.bar+gain);
+          if(ep.breached){ep.breached=false;L.push({t:`${ch.n} colmate la brèche à ${ep.l} ! (${ep.bar}/${ep.mb} · pl:${G.planks})`,c:'g'});}
+          else{ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatBarricade);L.push({t:`${ch.n} renforce ${ep.l}. (${ep.bar}/${ep.mb} · pl:${G.planks})`,c:''});}
+        }else if(ep.breached){
+          ep.breached=false;ch.hp=0;
+          L.push({t:`${ch.n} se jette dans la brèche de ${ep.l} et la bloque de son corps. Il/elle ne survivra pas.`,c:'d'});
+        }else{
+          L.push({t:`${ch.n} : plus de planches !`,c:'d'});
+        }
+      }
     }
     else if(ch.action.startsWith('dest_bed_')){
       const bed=G.beds.find(b=>b.id===ch.action.replace('dest_bed_',''));
