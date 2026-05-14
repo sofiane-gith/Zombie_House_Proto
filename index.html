@@ -244,6 +244,56 @@
   }
   .dyn-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
   .dyn-card-title { font-size: 12px; font-weight: 600; }
+  /* Tooltips */
+  .tip {
+    position: relative;
+    cursor: default;
+  }
+  .tip::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 7px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0a0d14;
+    border: 0.5px solid var(--border2);
+    color: var(--text2);
+    font-size: 11px;
+    white-space: nowrap;
+    padding: 5px 9px;
+    border-radius: var(--radius-sm);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .15s;
+    z-index: 99;
+  }
+  .tip::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--border2);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .15s;
+    z-index: 99;
+  }
+  .tip:hover::after, .tip:hover::before { opacity: 1; }
+  /* Breach warning */
+  .zone.breached { border-color: var(--danger) !important; background: rgba(224,85,85,.07); }
+  .breach-warn {
+    font-size: 10px;
+    color: var(--danger);
+    font-weight: 600;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
   /* Responsive */
   @media (max-width: 600px) {
     .main-grid { grid-template-columns: 1fr; }
@@ -262,10 +312,10 @@
     <span id="ht" class="hbar-turn">Tour 1</span>
     <span id="he" class="hbar-exit">Sortie : 0/5</span>
     <div class="hbar-stats">
-      <span class="stat-chip" style="color:var(--warning);"><i class="ti ti-tools"></i><span id="hplv">4</span></span>
-      <span class="stat-chip" style="color:var(--success);"><i class="ti ti-apple"></i><span id="hfov">6</span></span>
-      <span id="hte" class="stat-chip"><i id="htico" class="ti ti-flame"></i><span id="htv">4/5</span></span>
-      <span id="hsu" class="stat-chip">Survivants : 3/3</span>
+      <span class="stat-chip tip" style="color:var(--warning);" data-tip="Planches disponibles — barricades &amp; feu"><i class="ti ti-tools"></i><span id="hplv">3</span></span>
+      <span class="stat-chip tip" style="color:var(--success);" data-tip="Nourriture — 1 ration consommée par tour"><i class="ti ti-apple"></i><span id="hfov">4</span></span>
+      <span id="hte" class="stat-chip tip" data-tip="Température intérieure — 0 = dégâts de froid"><i id="htico" class="ti ti-flame"></i><span id="htv">3/5</span></span>
+      <span id="hsu" class="stat-chip tip" data-tip="Survivants encore en vie">Survivants : 3/3</span>
     </div>
   </div>
 
@@ -298,7 +348,7 @@
 <script>
 let CONF={
   startPlanks:3,startFood:4,startTemp:3,
-  searchNeeded:8,
+  searchNeeded:10,
   startSearchLeft:4,
   forageChancePlanks:40,forageChanceFood:25,forageChanceBoth:10,
   foragePlanksMin:1,foragePlanksMax:2,
@@ -442,7 +492,7 @@ function init(){
     searchLeft:CONF.startSearchLeft,
     furniture:CONF.furnitureDefs.map((f,i)=>({id:'f'+i,l:f.n,pl:f.pl,ok:true})),
     beds:[{id:'bed1',l:'Lit principal',pl:3,ok:true},{id:'bed2',l:'Canapé-lit',pl:2,ok:true}],
-    entries:CONF.entryDefs.map((e,i)=>({id:'e'+i,l:e.n,bar:e.bar,mb:e.maxBar,pres:e.pres,chars:[]})),
+    entries:CONF.entryDefs.map((e,i)=>({id:'e'+i,l:e.n,bar:e.bar,mb:e.maxBar,pres:e.pres,chars:[],breached:false})),
     chars:CONF.charDefs.map((c,i)=>({id:'c'+i,n:c.n,role:c.role,hp:c.mhp,mhp:c.mhp,fat:0,barBonus:c.barBonus,action:null})),
   };
   document.getElementById('log').innerHTML='';
@@ -498,8 +548,11 @@ function renderSc(){
     const nopl=G.planks<CONF.plankBarricade;
     const bc=ep.bar===0?'var(--danger)':ep.bar<=1?'var(--warning)':'#d4820a';
     const names=ep.chars.map(id=>G.chars.find(c=>c.id===id)?.n).filter(Boolean).join(', ');
-    const d=mk(sc,'div','zone'+(can&&!nopl?' pick':can&&nopl?' off':''));
-    d.innerHTML=`<div class="zone-header"><span class="zone-title"><i class="ti ti-shield" style="margin-right:4px;"></i>${ep.l}</span><span style="font-size:11px;color:var(--danger);"><i class="ti ti-alert-triangle"></i> ${ep.pres}</span></div>${mkBar(ep.bar,ep.mb,bc)}<div class="zone-footer"><span>${ep.bar}/${ep.mb} <span style="color:var(--warning);">(${CONF.plankBarricade}pl·fat+${CONF.fatBarricade})</span></span>${names?`<span style="color:var(--warning);">${names}</span>`:''}</div>`;
+    const breachClass=ep.breached?' breached':'';
+    // Breached entries are always clickable when a char is selected (to assign repair)
+    const clickable=can&&(ep.breached||!nopl);
+    const d=mk(sc,'div','zone'+breachClass+(can&&!clickable?' off':clickable?' pick':''));
+    d.innerHTML=`<div class="zone-header"><span class="zone-title"><i class="ti ti-shield" style="margin-right:4px;"></i>${ep.l}</span><span style="font-size:11px;color:var(--danger);"><i class="ti ti-alert-triangle"></i> ${ep.pres}</span></div>${mkBar(ep.bar,ep.mb,bc)}<div class="zone-footer"><span>${ep.bar}/${ep.mb} <span style="color:var(--warning);">(${CONF.plankBarricade}pl·fat+${CONF.fatBarricade})</span></span>${names?`<span style="color:var(--warning);">${names}</span>`:''}</div>${ep.breached?`<div class="breach-warn"><i class="ti ti-alert-triangle"></i> BRÈCHE OUVERTE — colmatez ce tour !</div>`:''}`;
     d.addEventListener('click',()=>assign('bar_'+ep.id));
   });
   mk(sc,'p','section-label').textContent='Sortie de secours';
@@ -594,7 +647,7 @@ function resolve(){
     }
     else if(ch.action.startsWith('bar_')){
       const ep=G.entries.find(e=>e.id===ch.action.replace('bar_',''));
-      if(ep){if(G.planks>=CONF.plankBarricade){G.planks-=CONF.plankBarricade;const gain=1+(ch.barBonus||0);ep.bar=Math.min(ep.mb,ep.bar+gain);ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatBarricade);L.push({t:`${ch.n} renforce ${ep.l}. (${ep.bar}/${ep.mb} · pl:${G.planks})`,c:''});}
+      if(ep){if(G.planks>=CONF.plankBarricade){G.planks-=CONF.plankBarricade;const gain=1+(ch.barBonus||0);ep.bar=Math.min(ep.mb,ep.bar+gain);if(ep.breached){ep.breached=false;L.push({t:`${ch.n} colmate la brèche à ${ep.l} ! (${ep.bar}/${ep.mb} · pl:${G.planks})`,c:'g'});}else{ch.fat=Math.min(CONF.fatMax,ch.fat+CONF.fatBarricade);L.push({t:`${ch.n} renforce ${ep.l}. (${ep.bar}/${ep.mb} · pl:${G.planks})`,c:'',});}}
       else L.push({t:`${ch.n} : plus de planches !`,c:'d'});}
     }
     else if(ch.action.startsWith('dest_bed_')){
@@ -619,10 +672,24 @@ function resolve(){
   else{const a=G.chars.filter(c=>c.hp>0);if(a.length){const v=a[Math.floor(Math.random()*a.length)];v.hp=Math.max(0,v.hp-1);L.push({t:`${v.n} souffre de la faim. (${v.hp}/${v.mhp})`,c:'d'});}}
   if(G.fire>0){G.fire--;if(!G.fire){G.temp=Math.max(1,G.temp-1);L.push({t:`Le feu s'éteint. Temp : ${G.temp}/5.`,c:'w'});}}
   else{G.temp=Math.max(1,G.temp-1);if(G.temp<=1){const a=G.chars.filter(c=>c.hp>0);if(a.length){const v=a[Math.floor(Math.random()*a.length)];v.hp=Math.max(0,v.hp-1);L.push({t:`Froid glacial ! ${v.n} souffre. (${v.hp}/${v.mhp})`,c:'d'});}}else L.push({t:`Température : ${G.temp}/5.`,c:'w'});}
+  let massBreached=false;
   G.entries.forEach(ep=>{
-    if(ep.bar>0){ep.bar=Math.max(0,ep.bar-ep.pres);if(!ep.bar)L.push({t:`Barricade tombée : ${ep.l} !`,c:'d'});else L.push({t:`Zombies à ${ep.l}. Barricade : ${ep.bar}/${ep.mb}.`,c:''});}
-    else{const a=G.chars.filter(c=>c.hp>0);if(a.length){const v=a[Math.floor(Math.random()*a.length)];v.hp=Math.max(0,v.hp-1);L.push({t:`Brèche à ${ep.l} ! ${v.n} blessé·e. (${v.hp}/${v.mhp})`,c:'d'});}}
+    if(massBreached)return;
+    if(ep.bar>0){
+      ep.bar=Math.max(0,ep.bar-ep.pres);
+      if(ep.bar===0){ep.breached=true;L.push({t:`⚠ Barricade tombée : ${ep.l} ! Colmatez avant la fin du prochain tour ou c'est la mort.`,c:'d'});}
+      else L.push({t:`Zombies à ${ep.l}. Barricade : ${ep.bar}/${ep.mb}.`,c:''});
+    } else if(ep.breached){
+      massBreached=true;
+      L.push({t:`Les zombies déferlent par ${ep.l} — tout le monde est submergé !`,c:'d'});
+    }
   });
+  if(massBreached){
+    G.chars.forEach(c=>{c.hp=0;});
+    addLog(`Tour ${G.turn}`,L);G.turn++;
+    showOv('La horde a tout envahi.','Une entrée est restée ouverte trop longtemps. Les zombies ont submergé le groupe.','var(--danger)');
+    return;
+  }
   if(G.turn%CONF.pressInterval===0){G.entries.forEach(ep=>ep.pres+=CONF.pressAmount);L.push({t:`La horde grossit ! +${CONF.pressAmount} pression sur chaque accès.`,c:'d'});}
   G.chars.forEach(c=>{c.action=null;});G.entries.forEach(ep=>{ep.chars=[];});
   addLog(`Tour ${G.turn}`,L);G.turn++;
